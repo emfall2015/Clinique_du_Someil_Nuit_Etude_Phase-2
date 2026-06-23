@@ -1,5 +1,6 @@
 CREATE DEFINER=`root`@`localhost` PROCEDURE `insert_data_night`(
 nuit INTEGER,
+id_medecin_validateur INTEGER,
 spo2_min DECIMAL(5,2),
 spo2_moy DECIMAL(5,2),
 spo2_mediane DECIMAL(5,2),
@@ -10,18 +11,18 @@ decibels_max DECIMAL(5,2),
 decibels_moy DECIMAL(5,2),
 nb_ronflements_forts INTEGER)
 BEGIN
-	INSERT INTO resultat_nuit (id_nuit, id_medecin_validateur, date_validation, iah, spo2_min, spo2_moy, spo2_mediane, nb_apnees, nb_hypopnees, nb_rera, nb_microeveils, duree_sommeil_min, duree_hypoxie_min, position_dominante, duree_apnee_moy_sec, duree_apnee_max_sec, decibels_max, decibels_moy, nb_ronflements_forts)  VALUES
+	INSERT INTO resultat_nuit (id_nuit,id_medecin_validateur, date_validation, iah, spo2_min, spo2_moy, spo2_mediane, nb_apnees, nb_hypopnees, nb_rera, nb_microeveils, duree_sommeil_min, duree_hypoxie_min, position_dominante, duree_apnee_moy_sec, duree_apnee_max_sec, decibels_max, decibels_moy, nb_ronflements_forts)  VALUES
     (nuit,
-    (SELECT id_medecin FROM nuit_etude WHERE id_nuit = nuit), 
+    id_medecin_validateur, 
     current_date(),
-    (SELECT SUM(valeur)/2 FROM (select COUNT(type_evenement) as valeur FROM evenement_respiratoire WHERE (type_evenement = 'apnée obstructive' OR type_evenement = 'apnée centrale') AND id_nuit = nuit UNION ALL SELECT COUNT(type_evenement) as valeur FROM evenement_respiratoire WHERE (type_evenement = 'hypopnée') AND id_nuit = nuit) AS iah),
+    (SELECT SUM(valeur)*60/duree_sommeil_min FROM (select COUNT(type_evenement) as valeur FROM evenement_respiratoire WHERE (type_evenement = 'apnée obstructive' OR type_evenement = 'apnée centrale') AND id_nuit = nuit UNION ALL SELECT COUNT(type_evenement) as valeur FROM evenement_respiratoire WHERE (type_evenement = 'hypopnée') AND id_nuit = nuit) AS iah),
     spo2_min,
     spo2_moy,
     spo2_mediane,
-    (SELECT (COUNT(type_evenement)*duree_sommeil_min/120) as nb_apnees FROM evenement_respiratoire WHERE (type_evenement = 'apnée obstructive' OR type_evenement = 'apnée centrale') AND id_nuit = nuit),
-    (SELECT (COUNT(type_evenement)*duree_sommeil_min/120) as nb_hypopnees FROM evenement_respiratoire WHERE (type_evenement = 'hypopnée') AND id_nuit = nuit),
-    (SELECT (COUNT(type_evenement)*duree_sommeil_min/120) as nb_rera FROM evenement_respiratoire WHERE (type_evenement = 'RERA') AND id_nuit = nuit),
-    (SELECT (COUNT(type_evenement)*duree_sommeil_min/120) as nb_microeveils FROM evenement_respiratoire WHERE id_nuit = nuit),
+    (SELECT (COUNT(type_evenement)) as nb_apnees FROM evenement_respiratoire WHERE (type_evenement = 'apnée obstructive' OR type_evenement = 'apnée centrale') AND id_nuit = nuit),
+    (SELECT (COUNT(type_evenement)) as nb_hypopnees FROM evenement_respiratoire WHERE (type_evenement = 'hypopnée') AND id_nuit = nuit),
+    (SELECT (COUNT(type_evenement)) as nb_rera FROM evenement_respiratoire WHERE (type_evenement = 'RERA') AND id_nuit = nuit),
+    (SELECT (COUNT(type_evenement)) as nb_microeveils FROM evenement_respiratoire WHERE id_nuit = nuit),
     duree_sommeil_min,
     duree_hypoxie_min,
     position_dominante,
@@ -29,5 +30,26 @@ BEGIN
     (SELECT max(duree_sec) as duree_apnee_max_sec from evenement_respiratoire where id_nuit = nuit),
     decibels_max,
     decibels_moy,
-    nb_ronflements_forts);
+    nb_ronflements_forts)
+	ON DUPLICATE KEY UPDATE
+    id_nuit = VALUES(id_nuit),
+    id_medecin_validateur = VALUES(id_medecin_validateur),
+    date_validation = current_date(),
+    iah = VALUES(iah), 
+    spo2_min= VALUES(spo2_min), 
+    spo2_moy= VALUES(spo2_moy), 
+    spo2_mediane= VALUES(spo2_mediane),
+    nb_apnees= VALUES(nb_apnees),
+    nb_hypopnees= VALUES(nb_hypopnees),
+    nb_rera= VALUES(nb_rera),
+    nb_microeveils= VALUES(nb_microeveils),
+    duree_sommeil_min= VALUES(duree_sommeil_min),
+    duree_hypoxie_min= VALUES(duree_hypoxie_min),
+    position_dominante= VALUES(position_dominante), 
+    duree_apnee_moy_sec= VALUES(duree_apnee_moy_sec),
+    duree_apnee_max_sec= VALUES(duree_apnee_max_sec),
+    decibels_max= VALUES(decibels_max),
+    decibels_moy= VALUES(decibels_moy),
+    nb_ronflements_forts= VALUES(nb_ronflements_forts)
+   ;
 END
