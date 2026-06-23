@@ -14,6 +14,7 @@ import sqlite3
 
 # Pour choisir le csv a charger en fonction de l'id_nuit
 id_nuit = input("Entrez l'id_nuit du fichier à charger : ")
+id_medecin = input("Entrez l'id_medecin du fichier à charger : ")
 
 for fichier in os.listdir("./raw/"):
     if fichier.endswith(f"-{id_nuit}.csv"):
@@ -123,7 +124,7 @@ df.to_csv(f"./raw/traite/traite_signal-psg-patient-2-nuit-{id_nuit}.csv", sep=",
 
 # # Charger les résultats_nuit dans SQL
 
-cur.callproc('insert_data_night',(id_nuit, spo2_min, spo2_moy, spo2_mediane, duree_sommeil_min, duree_hypoxie, position_dominante, decibels_max, decibels_moy, nbr_ronflements_forts))
+cur.callproc('insert_data_night',(id_nuit,id_medecin, spo2_min, spo2_moy, spo2_mediane, duree_sommeil_min, duree_hypoxie, position_dominante, decibels_max, decibels_moy, nbr_ronflements_forts))
 cnx.commit()
 
 
@@ -137,7 +138,6 @@ intervalles_detectes = []
 for index, row in df.iterrows():
         flag = row['flag_evenement']
         timestamp = row['timestamp_sec']
-
         # Gérer les cas où la valeur FLAG est manquante ou non numérique
         if pd.isna(flag):
             continue
