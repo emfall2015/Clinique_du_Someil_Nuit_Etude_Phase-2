@@ -295,7 +295,7 @@ with open(dossier / f"rapport_medical_{id_nuit}.txt", "w", encoding="utf-8") as 
     f.write("IAH : \n\n")
     f.write(f" IAH:{iah}\n\n")
     f.write("Commentaire du medecin : \n\n")
-    f.write(f" commentaire: {saisi_commentaire}\n\n")
+    f.write(f"  {saisi_commentaire}\n\n")
     print(f"Rapport Medical généré dans 'rapport_medical.txt'.")
 
 
