@@ -268,6 +268,7 @@ with open(dossier / f"rapport_medical_{id_nuit}.txt", "w", encoding="utf-8") as 
     
     f.write("============================================\n")
     f.write(f"=== Nuit : {id_nuit} ===\n\n")
+    f.write(f"=== Medecin : {id_medecin} ===\n\n")
     f.write("Spo2 min/moy/max: \n\n")
     f.write(f"minimum :{spo2_min}\n\n")
     f.write(f"moyen :{spo2_moy}\n\n")
