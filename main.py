@@ -14,7 +14,8 @@ import sqlite3
 
 # Pour choisir le csv a charger en fonction de l'id_nuit
 id_nuit = input("Entrez l'id_nuit du fichier à charger : ")
-id_medecin = input("Entrez l'id_medecin du fichier à charger : ")
+id_medecin = input("Entrez l'id_medecin du validateur : ")
+commentaire_medical = input("votre commentaire : ")
 
 for fichier in os.listdir("./raw/"):
     if fichier.endswith(f"-{id_nuit}.csv"):
@@ -32,8 +33,12 @@ else :
 #---------------------------------------------------
 df['timestamp_sec'] = pd.to_numeric(df['timestamp_sec'])
 
-duree_sommeil_min = df['timestamp_sec'].max() - df['timestamp_sec'].min()/60
+ # Pas d'échantillonnage entre deux lignes (ex: 10 secondes)
+pas_sec = df["timestamp_sec"].iloc[1] - df["timestamp_sec"].iloc[0]
 
+# Durée couverte par le CSV (ex: 3600 sec = 1h)
+duree_sommeil_sec = df['timestamp_sec'].iloc[-1] - df['timestamp_sec'].iloc[0] + pas_sec
+duree_sommeil_min = duree_sommeil_sec/60
 print(duree_sommeil_min)
 
 #-----------------------------------------------------
@@ -124,7 +129,7 @@ df.to_csv(f"./raw/traite/traite_signal-psg-patient-2-nuit-{id_nuit}.csv", sep=",
 
 # # Charger les résultats_nuit dans SQL
 
-cur.callproc('insert_data_night',(id_nuit,id_medecin, spo2_min, spo2_moy, spo2_mediane, duree_sommeil_min, duree_hypoxie, position_dominante, decibels_max, decibels_moy, nbr_ronflements_forts))
+cur.callproc('insert_data_night',(id_nuit,id_medecin, spo2_min, spo2_moy, spo2_mediane, duree_sommeil_min, duree_hypoxie, position_dominante, decibels_max, decibels_moy, nbr_ronflements_forts, commentaire_medical))
 cnx.commit()
 
 
@@ -169,7 +174,7 @@ for index, row in df.iterrows():
                 # On trouve un '0', mais le début était soit absent, soit déjà traité.
                 pass
 
-print(intervalles_detectes)
+
 
 
 #-----------------------------------------------------
@@ -293,7 +298,8 @@ with open(dossier / f"rapport_medical_{id_nuit}.txt", "w", encoding="utf-8") as 
     f.write("============================================\n\n")
     f.write("IAH : \n\n")
     f.write(f" IAH:{iah}\n\n")
-    
+    f.write("Commentaire du medecin : \n\n")
+    f.write(f"  {commentaire_medical}\n\n")
     print(f"Rapport Medical généré dans 'rapport_medical.txt'.")
 
 
