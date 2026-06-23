@@ -25,9 +25,15 @@ else :
 #-----------------------------------------------------
 #-------- DUREE SOMMEIL MINUTES ----------------------
 
-# ICI on crée une variable pour indiquer la durée du sommeil en fonction des notes techniques
-#duree_sommeil_min =  int(input("Entrez durée du sommeil en minutes : "))
+# ICI on crée une variable pour indiquer la durée du sommeil en fonction de la première et la dernière valeur de la colonne timestamp
+#dure_sommeil_min = df['timestamp_sec'].max() - df['timestamp_sec'].min()/60
 
+#---------------------------------------------------
+df['timestamp_sec'] = pd.to_numeric(df['timestamp_sec'])
+
+dure_sommeil_min = df['timestamp_sec'].max() - df['timestamp_sec'].min()/60
+
+print(dure_sommeil_min)
 
 #-----------------------------------------------------
 #-------- LECTURE SQL---------------------------------
@@ -104,17 +110,6 @@ position_dominante = position_dominante[position_dominante == max(position_domin
 
 
 nb_doublons = df.duplicated().sum()
-
-#---------------------------------------------------
-df['timestamp_sec'] = pd.to_numeric(df['timestamp_sec'])
-
-dure_sommeil = df['timestamp_sec'].max() - df['timestamp_sec'].min()
-
-print(dure_sommeil)
-
-
-
-
 
 
 #-----------------------------------------------------
