@@ -1,4 +1,5 @@
-datalake.db
+datalake/datalake.db
+base_analytique/
 __pycache__/
 .env
 nuits/

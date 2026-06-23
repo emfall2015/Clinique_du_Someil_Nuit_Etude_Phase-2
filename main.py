@@ -305,7 +305,7 @@ with open(dossier / f"rapport_medical_{id_nuit}.txt", "w", encoding="utf-8") as 
 
 #-----------------------------------------------------
 #--------  Création du datalake --------------- --------------------
-cnx_sqlite = sqlite3.connect("datalake.db")
+cnx_sqlite = sqlite3.connect("datalake/datalake.db")
 cursqlite = cnx_sqlite.cursor()
 cursqlite.execute("CREATE TABLE IF NOT EXISTS raw_capteur (id_raw INTEGER PRIMARY KEY AUTOINCREMENT,id_nuit  INTEGER NOT NULL,timestamp_sec INTEGER NOT NULL,spo2 REAL,debitnasalpct REAL,effortthoraciquepct REAL,position TEXT,ronflements_db REAL,flagevenement INTEGER CHECK (flagevenement IN (0,1)))")
 cursqlite.execute("CREATE TABLE IF NOT EXISTS curated_nuit (id_curated INTEGER PRIMARY KEY AUTOINCREMENT,id_nuit INTEGER NOT NULL,spo2_min REAL,spo2_moy REAL,spo2_mediane REAL,nb_apnees INTEGER,nb_hypopnees INTEGER,nb_rera INTEGER,nb_microeveils INTEGER,dureehypoxiemin REAL,position_dominante TEXT,decibels_max REAL,decibels_moy REAL,nbronflementsforts INTEGER)")
