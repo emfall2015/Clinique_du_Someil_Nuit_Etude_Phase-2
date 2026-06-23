@@ -170,7 +170,7 @@ for index, row in df.iterrows():
                 # On trouve un '0', mais le début était soit absent, soit déjà traité.
                 pass
 
-print(intervalles_detectes)
+
 
 
 #-----------------------------------------------------
