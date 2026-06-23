@@ -15,6 +15,7 @@ import sqlite3
 # Pour choisir le csv a charger en fonction de l'id_nuit
 id_nuit = input("Entrez l'id_nuit du fichier à charger : ")
 id_medecin = input("Entrez l'id_medecin du fichier à charger : ")
+saisi_commentaire = input("votre commentaire : ")
 
 for fichier in os.listdir("./raw/"):
     if fichier.endswith(f"-{id_nuit}.csv"):
@@ -293,7 +294,8 @@ with open(dossier / f"rapport_medical_{id_nuit}.txt", "w", encoding="utf-8") as 
     f.write("============================================\n\n")
     f.write("IAH : \n\n")
     f.write(f" IAH:{iah}\n\n")
-    
+    f.write("Commentaire du medecin : \n\n")
+    f.write(f" commentaire: {saisi_commentaire}\n\n")
     print(f"Rapport Medical généré dans 'rapport_medical.txt'.")
 
 
