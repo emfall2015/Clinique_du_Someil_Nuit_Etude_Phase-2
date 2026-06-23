@@ -14,6 +14,7 @@ import sqlite3
 
 # Pour choisir le csv a charger en fonction de l'id_nuit
 id_nuit = input("Entrez l'id_nuit du fichier à charger : ")
+id_medecin = input("Entrez l'id_medecin du fichier à charger : ")
 
 for fichier in os.listdir("./raw/"):
     if fichier.endswith(f"-{id_nuit}.csv"):
@@ -25,10 +26,15 @@ else :
 #-----------------------------------------------------
 #-------- DUREE SOMMEIL MINUTES ----------------------
 
-# ICI on crée une variable pour indiquer la durée du sommeil en fonction des notes techniques
-duree_sommeil_min =  int(input("Entrez durée du sommeil en minutes : "))
+# ICI on crée une variable pour indiquer la durée du sommeil en fonction de la première et la dernière valeur de la colonne timestamp
+#dure_sommeil_min = df['timestamp_sec'].max() - df['timestamp_sec'].min()/60
 
+#---------------------------------------------------
+df['timestamp_sec'] = pd.to_numeric(df['timestamp_sec'])
 
+duree_sommeil_min = df['timestamp_sec'].max() - df['timestamp_sec'].min()/60
+
+print(duree_sommeil_min)
 
 #-----------------------------------------------------
 #-------- LECTURE SQL---------------------------------
@@ -108,12 +114,19 @@ nb_doublons = df.duplicated().sum()
 
 
 
+#-----------------------------------------------------
+#-------- EXTRAPOLATION RESULTATS --------------------
+
+
+
 # Copier le CSV brut dans /raw/traite/
 df.to_csv(f"./raw/traite/traite_signal-psg-patient-2-nuit-{id_nuit}.csv", sep=",", index=False, encoding="utf-8-sig")
 
 # # Charger les résultats_nuit dans SQL
-cur.callproc('insert_data_night',(id_nuit, spo2_min, spo2_moy, spo2_mediane, duree_sommeil_min, duree_hypoxie, position_dominante, decibels_max, decibels_moy, nbr_ronflements_forts))
+
+cur.callproc('insert_data_night',(id_nuit,id_medecin, spo2_min, spo2_moy, spo2_mediane, duree_sommeil_min, duree_hypoxie, position_dominante, decibels_max, decibels_moy, nbr_ronflements_forts))
 cnx.commit()
+
 
 #-----------------------------------------------------
 #--------  Surlignage --------------- -------
@@ -125,7 +138,6 @@ intervalles_detectes = []
 for index, row in df.iterrows():
         flag = row['flag_evenement']
         timestamp = row['timestamp_sec']
-
         # Gérer les cas où la valeur FLAG est manquante ou non numérique
         if pd.isna(flag):
             continue
@@ -256,6 +268,7 @@ with open(dossier / f"rapport_medical_{id_nuit}.txt", "w", encoding="utf-8") as 
     
     f.write("============================================\n")
     f.write(f"=== Nuit : {id_nuit} ===\n\n")
+    f.write(f"=== Medecin : {id_medecin} ===\n\n")
     f.write("Spo2 min/moy/max: \n\n")
     f.write(f"minimum :{spo2_min}\n\n")
     f.write(f"moyen :{spo2_moy}\n\n")
