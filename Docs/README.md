@@ -1,30 +1,56 @@
-# Clinique_du_sommeil
+# Clinique_du_sommeil - Phase 2
 
 # Objectif projet
+- Lecture du CSV capteur
+- Calcul les indicateurs cliniques
+- Remplissage de la table resultat_nuit avec les indicateurs cliniques du csv et de la table evenement_respiratoire
+- Envoi du CSV dans le datalake pour usage futur (modèle en étoile fait_nuits)
+- Produire un rapport médical avec diagnostic et courbes que le médecin pourra charger plus tard
 
--Lit le CSV capteur
--Calcule les indicateurs cliniques
--Remplit la table resultatnuit avec les indicateurs cliniques du csv et de la table evenementrespiratoire
--Envoie le CSV dans le datalake pour usage futur(modèle en étoile fait_nuits)
--Porduit un rapport médical avec diagnostic et courbes que le médecin pourra charger plus tard
+# Utilité du projet
+Le projet va servir à connecter à une application front end(html/css/js) et back end(node.js/express.js) pour permettre au medecin de charger des rapport ainsi que des courbes sur des résultat d'analyse et ainsi implémenter les données nettoyées sur une IA disponible publiquement (TensorFlow)
 
-# utilité du projet
-le projet va servir a le connecter à une application front end(html/css/js) et back end(node.js/express.js)pour permettre au medecin de charger des rapport ainsi que des courbes sur des résultat d'analyse et ainsi implémenter les données nettoyer sur une IA disponible publiquement (TensorFlow)
+# Préparation de l'environnement
+Créer un fichier .env contenant :
+   ````
+    DB_HOST=localhost
+    DB_USER=root
+    DB_PASSWORD=votre_mdp
+    DB_NAME=nom_base_donnees
+    ```
 
-# contribution équipe
-Cedric = [Extraction - Lire le CSV capteur depuis un répertoire raw/]-[Transformation - Extrapolation sur la nuit complète] - [Livrables - Courbe à générer - Courbe débit nasal vs temps]
+Installer 
+```
+pip install dotenv
+```
 
-flora = [Transformation - Depuis le CSV - Décibels maximum et moyenne]- [Transformation - Depuis evenement_respiratoire -Nb d'apnées, hypopnées, RERA et évènements] - [calcul IAH et diag SAHOS] - [Livrables - Courbe à générer -  Courbe ronflements db vs temps]
+Installer 
+```
+pip install mysql-connector-python
+```
 
-malik = [Transformation - Depuis le CSV - Ronflement (nb) et position de someil] - [Transformation - Depuis le CSV - spo2 minimum moyenne, médianne et <90] - [Transformation - une fois les calculs réalisés - Copier le CSV brut dans /raw/traite/] - [Optionnel - Livrables - Courbe à générer - Surligner les segments d'événements]
+Créer la base de données via le fichier SQL fourni ```cliniquenuitscompletes.sql```
 
-yassine = [connection bdd en dotenv pour protection info connexion] - [Extraction - Lire les événements depuis la table evenement_respiratoire(via SQL)]- [Rapport - Réaliser le rapport médical (pour le médecin)]-[Livrables - Courbe à générer - Courbe SpO2 vs temps] - [redaction du readme.md]
 
-# Projet versionner avec git
+# Génération des fichiers
+Une fois la base de données SQL créée et la connexion établie, le script python peut être lancé.
+Celui-ci générera automatiquement les fichiers et dossiers suivants :
+- nuits/
+    -{id_nuit}
+        ├── rapport_medical_{id_nuit}.txt
 
-branche principal -> main
-branch pour les test -> dev
-depuis -> dev ->branche perso(votre_nom)
-depuis ->branche perso ->branche <feat>,<fix>,<docs>,<chores>
+        ├── spo2_{id_nuit}.png
 
-lead = cedric
+        ├── spo2_{id_nuit}.pdf
+
+        ├── debit_nasal_nuit_{id_nuit}.png
+
+        ├── debit_nasal_nuit_{id_nuit}.pdf
+
+        ├── ronflements_db_{id_nuit}.png
+
+        └── ronflements_db_{id_nuit}.pdf
+
+- raw/traite
+
+- datalake.db
