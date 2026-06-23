@@ -14,7 +14,7 @@ import sqlite3
 
 # Pour choisir le csv a charger en fonction de l'id_nuit
 id_nuit = input("Entrez l'id_nuit du fichier à charger : ")
-id_medecin = input("Entrez l'id_medecin du fichier à charger : ")
+id_medecin = input("Entrez l'id_medecin du validateur : ")
 commentaire = input("votre commentaire : ")
 
 for fichier in os.listdir("./raw/"):
