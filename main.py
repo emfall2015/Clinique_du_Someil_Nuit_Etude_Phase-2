@@ -33,7 +33,7 @@ else :
 #---------------------------------------------------
 df['timestamp_sec'] = pd.to_numeric(df['timestamp_sec'])
 
-duree_sommeil_min = df['timestamp_sec'].max() - df['timestamp_sec'].min()/60
+duree_sommeil_min = (df['timestamp_sec'].max() - df['timestamp_sec'].min())/60
 
 print(duree_sommeil_min)
 
