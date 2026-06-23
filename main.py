@@ -33,8 +33,12 @@ else :
 #---------------------------------------------------
 df['timestamp_sec'] = pd.to_numeric(df['timestamp_sec'])
 
-duree_sommeil_min = (df['timestamp_sec'].max() - df['timestamp_sec'].min())/60
+ # Pas d'échantillonnage entre deux lignes (ex: 10 secondes)
+pas_sec = df["timestamp_sec"].iloc[1] - df["timestamp_sec"].iloc[0]
 
+# Durée couverte par le CSV (ex: 3600 sec = 1h)
+duree_sommeil_sec = df['timestamp_sec'].iloc[-1] - df['timestamp_sec'].iloc[0] + pas_sec
+duree_sommeil_min = duree_sommeil_sec/60
 print(duree_sommeil_min)
 
 #-----------------------------------------------------
