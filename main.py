@@ -39,7 +39,7 @@ pas_sec = df["timestamp_sec"].iloc[1] - df["timestamp_sec"].iloc[0]
 # Durée couverte par le CSV (ex: 3600 sec = 1h)
 duree_sommeil_sec = df['timestamp_sec'].iloc[-1] - df['timestamp_sec'].iloc[0] + pas_sec
 duree_sommeil_min = duree_sommeil_sec/60
-print(duree_sommeil_min)
+
 
 #-----------------------------------------------------
 #-------- LECTURE SQL---------------------------------
@@ -305,6 +305,12 @@ with open(dossier / f"rapport_medical_{id_nuit}.txt", "w", encoding="utf-8") as 
 
 #-----------------------------------------------------
 #--------  Création du datalake --------------- --------------------
+
+# Dossier de destination
+datalake = Path("datalake")
+
+# Création du dossier et des sous-dossiers si nécessaire
+datalake.mkdir(parents=True, exist_ok=True)
 cnx_sqlite = sqlite3.connect("datalake/datalake.db")
 cursqlite = cnx_sqlite.cursor()
 cursqlite.execute("CREATE TABLE IF NOT EXISTS raw_capteur (id_raw INTEGER PRIMARY KEY AUTOINCREMENT,id_nuit  INTEGER NOT NULL,timestamp_sec INTEGER NOT NULL,spo2 REAL,debitnasalpct REAL,effortthoraciquepct REAL,position TEXT,ronflements_db REAL,flagevenement INTEGER CHECK (flagevenement IN (0,1)))")
