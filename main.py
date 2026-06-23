@@ -88,7 +88,7 @@ spo2_mediane = round(df.loc[:,'spo2'].median(),1)
 
 
 # Compter le nombre de secondes où spo2 < 90 - Chaque ligne 10 secondes 
-nbr_secondes = len(df.loc[df['spo2'] < 90]) * 10
+duree_hypoxie = len(df.loc[df['spo2'] < 90]) * 10
 
 
 # Calcul du nombre de ronflement fort 
@@ -107,17 +107,12 @@ position_dominante = position_dominante[position_dominante == max(position_domin
 nb_doublons = df.duplicated().sum()
 
 
-#-----------------------------------------------------
-#-------- EXTRAPOLATION RESULTATS --------------------
-
-new_duree_hypoxie = round(((nbr_secondes/60)*duree_sommeil_min)/60, 1)
-new_nb_ronflements_forts = round((nbr_ronflements_forts/60)*duree_sommeil_min)
 
 # Copier le CSV brut dans /raw/traite/
 df.to_csv(f"./raw/traite/traite_signal-psg-patient-2-nuit-{id_nuit}.csv", sep=",", index=False, encoding="utf-8-sig")
 
 # # Charger les résultats_nuit dans SQL
-cur.callproc('insert_data_night',(id_nuit, spo2_min, spo2_moy, spo2_mediane, duree_sommeil_min, new_duree_hypoxie, position_dominante, decibels_max, decibels_moy, new_nb_ronflements_forts))
+cur.callproc('insert_data_night',(id_nuit, spo2_min, spo2_moy, spo2_mediane, duree_sommeil_min, duree_hypoxie, position_dominante, decibels_max, decibels_moy, nbr_ronflements_forts))
 cnx.commit()
 
 #-----------------------------------------------------
@@ -267,13 +262,13 @@ with open(dossier / f"rapport_medical_{id_nuit}.txt", "w", encoding="utf-8") as 
     f.write(f"mediane :{spo2_mediane}\n\n")
     f.write("============================================\n\n")
     f.write("Ronflement fort (>70dB): \n\n")
-    f.write(f"{new_nb_ronflements_forts}\n\n")
+    f.write(f"{nbr_ronflements_forts}\n\n")
     f.write("intensité des ronflements : \n\n")
     f.write(f" MAX : {decibels_max} \n\n")
     f.write(f" MOYEN : {decibels_moy}\n\n")
     f.write("============================================\n\n")
     f.write("Duree Hypoxie : \n\n")
-    f.write(f"{new_duree_hypoxie} min\n\n")
+    f.write(f"{duree_hypoxie} min\n\n")
     f.write("============================================\n\n")
     f.write("Position Dominante : \n\n")
     f.write(f" {position_dominante}\n\n")
