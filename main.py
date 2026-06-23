@@ -15,7 +15,7 @@ import sqlite3
 # Pour choisir le csv a charger en fonction de l'id_nuit
 id_nuit = input("Entrez l'id_nuit du fichier à charger : ")
 id_medecin = input("Entrez l'id_medecin du fichier à charger : ")
-saisi_commentaire = input("votre commentaire : ")
+commentaire = input("votre commentaire : ")
 
 for fichier in os.listdir("./raw/"):
     if fichier.endswith(f"-{id_nuit}.csv"):
@@ -125,7 +125,7 @@ df.to_csv(f"./raw/traite/traite_signal-psg-patient-2-nuit-{id_nuit}.csv", sep=",
 
 # # Charger les résultats_nuit dans SQL
 
-cur.callproc('insert_data_night',(id_nuit,id_medecin, spo2_min, spo2_moy, spo2_mediane, duree_sommeil_min, duree_hypoxie, position_dominante, decibels_max, decibels_moy, nbr_ronflements_forts))
+cur.callproc('insert_data_night',(id_nuit,id_medecin, spo2_min, spo2_moy, spo2_mediane, duree_sommeil_min, duree_hypoxie, position_dominante, decibels_max, decibels_moy, nbr_ronflements_forts, commentaire))
 cnx.commit()
 
 
@@ -295,7 +295,7 @@ with open(dossier / f"rapport_medical_{id_nuit}.txt", "w", encoding="utf-8") as 
     f.write("IAH : \n\n")
     f.write(f" IAH:{iah}\n\n")
     f.write("Commentaire du medecin : \n\n")
-    f.write(f"  {saisi_commentaire}\n\n")
+    f.write(f"  {commentaire}\n\n")
     print(f"Rapport Medical généré dans 'rapport_medical.txt'.")
 
 
