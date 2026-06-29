@@ -3,3 +3,6 @@ __pycache__/
 .env
 nuits/
 raw/traite/
+models/
+datalake.db
+base-analytique/models
