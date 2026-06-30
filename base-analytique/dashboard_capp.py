@@ -20,6 +20,7 @@ import matplotlib.ticker as ticker
 from datetime import datetime
 import plotly.express as px
 import seaborn as sns
+from generation_pdf import generer_pdf_patient
 
 # ============================================================
 # CONFIGURATION

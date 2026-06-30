@@ -1,0 +1,143 @@
+
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image 
+from reportlab.lib.styles import getSampleStyleSheet
+
+
+def generer_pdf_patient(patient, detail, rapport, comorbidite, probabilite, nuit_dir):
+    
+
+    fichier = f"rapport_patient_{patient['id_patient']}.pdf"
+
+    doc = SimpleDocTemplate(fichier)
+
+    styles = getSampleStyleSheet()
+
+    contenu = []
+
+
+    # TITRE
+    contenu.append(
+        Paragraph(
+            "Rapport Patient - Clinique du Sommeil d'Arles",
+            styles["Title"]
+        )
+    )
+
+    contenu.append(Spacer(1, 20))
+
+
+    # INFOS PATIENT
+    contenu.append(
+        Paragraph(
+            f"""
+            <b>Patient :</b> {patient['nom']} {patient['prenom']}<br/>
+            <b>ID Patient :</b> {patient['id_patient']}<br/>
+            <b>Date de la nuit :</b> {patient['date_nuit']}<br/>
+            <b>IAH :</b> {patient['iah']}<br/>
+            <b>Sévérité :</b> {patient['severite_iah']}
+            """,
+            styles["Normal"]
+        )
+    )
+
+
+    contenu.append(Spacer(1,20))
+
+
+    # RESULTATS DETAIL
+    contenu.append(
+        Paragraph(
+            "Résultats détaillés de la nuit",
+            styles["Heading2"]
+        )
+    )
+
+
+    for colonne in detail.columns:
+
+        contenu.append(
+            Paragraph(
+                f"{colonne} : {detail[colonne].iloc[0]}",
+                styles["Normal"]
+            )
+        )
+
+
+    contenu.append(Spacer(1,20))
+
+
+    # IA
+    contenu.append(
+        Paragraph(
+            "Analyse IA - Comorbidités",
+            styles["Heading2"]
+        )
+    )
+
+
+    contenu.append(
+        Paragraph(
+            f"""
+            Diagnostic probable : {comorbidite}<br/>
+            Probabilité : {probabilite*100:.1f} %
+            """,
+            styles["Normal"]
+        )
+    )
+
+
+    contenu.append(Spacer(1,20))
+
+
+    # RAPPORT MEDICAL
+    contenu.append(
+        Paragraph(
+            "Rapport médical complet",
+            styles["Heading2"]
+        )
+    )
+
+
+    contenu.append(
+        Paragraph(
+            rapport.replace("\n","<br/>"),
+            styles["Normal"]
+        )
+    )
+
+
+    # GRAPHIQUES
+    contenu.append(
+        Paragraph(
+            "Courbes de la nuit",
+            styles["Heading2"]
+        )
+    )
+
+    id_nuit = patient['id_nuit']
+
+    for img in [
+        f"spo2_{id_nuit}.png",
+        f"debit_nasal_nuit_{id_nuit}.png",
+        f"ronflement_db_{id_nuit}.png"
+    ]:
+
+        chemin = nuit_dir / img
+       
+        if chemin.exists():
+            print("Ajout image dans PDF :", chemin)
+            contenu.append(
+                Image(
+                    str(chemin),
+                    width=500,
+                    height=300
+                )
+            )
+
+            contenu.append(Spacer(1,20))
+
+
+    doc.build(contenu)
+
+
+    return fichier
