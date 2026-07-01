@@ -1,4 +1,4 @@
-#---------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
 # -------------- Remplir la base analytique (galaxie SQLite) avec la nuit --------------------
 
 import pandas as pd
@@ -8,7 +8,6 @@ from datetime import datetime
 from pathlib import Path
 import sqlite3
 
-
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
@@ -16,25 +15,86 @@ import sqlite3
 MYSQL_CONFIG = {
     "host": "localhost",
     "user": "root",
-     "password": "passer",
-    "database": "clinique_v2"
+    "password": "passer",
+    "database": "clinique_v2",
 }
 
 SQLITE_PATH = Path("base_analytique.db")
 
-def get_id_temps_dim_temps(date_validation):
-    SQLITE_PATH = Path("base_analytique.db")
-    query = """
-    SELECT * 
-    FROM dim_temps 
-    WHERE date_complete = ?
-    """
+import sqlite3
+import pandas as pd
+from pathlib import Path
+from datetime import datetime
+
+SQLITE_PATH = Path("base_analytique.db")
+
+"""
+Récuperer id_temps dans dim_temps si il existe, sinon creer la ligne sur dim_temps
+"""
+
+
+def get_or_create_dim_temps(date_nuit):
     conn = sqlite3.connect(SQLITE_PATH)
-    try:
-        df = pd.read_sql_query(query, conn, params=(date_validation,))
-    finally:
+    cursor = conn.cursor()
+
+    # 1. vérifier existence
+    query = "SELECT id_temps FROM dim_temps WHERE date_complete = ?"
+    df = pd.read_sql_query(query, conn, params=(date_nuit,))
+
+    if not df.empty:
         conn.close()
-    return df
+        return int(df.iloc[0]["id_temps"])
+
+    # 2. sinon créer la dimension
+    if isinstance(date_nuit, str):
+        dt = datetime.strptime(date_nuit, "%Y-%m-%d").date()
+    else:
+        dt = date_nuit  # déjà datetime.date
+
+    id_temps = int(dt.strftime("%Y%m%d"))  # conversion 20260701 exemple
+    annee = dt.year
+    mois = dt.month
+    jour = dt.day
+
+    # Calcul du trimestre
+    # T1 : janvier, février, mars
+    # T2 : avril, mai, juin
+    # T3 : juillet, août, septembre
+    # T4 : octobre, novembre, décembre
+    trimestre = (mois - 1) // 3 + 1
+
+    jours_fr = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
+
+    jour_semaine = jours_fr[dt.weekday()]
+    # dt.weekday retourne le jour de la semaine en commencant par 0
+    # 0 lundi,
+    # 1 Mardi
+    # 2 Mercredi
+    est_weekend = 1 if dt.weekday() >= 5 else 0
+
+    insert_query = """
+    INSERT INTO dim_temps (
+        id_temps,
+        date_complete,
+        annee,
+        mois,
+        jour,
+        trimestre,
+        jour_semaine,
+        est_weekend
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """
+
+    cursor.execute(
+        insert_query,
+        (id_temps, date_nuit, annee, mois, jour, trimestre, jour_semaine, est_weekend),
+    )
+
+    conn.commit()
+    conn.close()
+
+    return id_temps
 
 
 def get_id_suivi_le_plus_proche_dim_suivi_patient(id_patient):
@@ -70,8 +130,7 @@ def pct_apnees_centrales(id_nuit):
             WHERE id_nuit = %s
               AND type_evenement IN (
                     'apnée obstructive',
-                    'apnée centrale',
-                    'apnée mixte'
+                    'apnée centrale'                  
               )
         """
 
@@ -95,10 +154,6 @@ def pct_apnees_centrales(id_nuit):
         print(f"Erreur MySQL : {e}")
         return None
 
-print(f"get_id_temps_dim_temps : {get_id_temps_dim_temps('2023-09-30').iloc[0]["id_temps"]}")
-print(f"get_id_suivi_le_plus_proche_dim_suivi_patient : {get_id_suivi_le_plus_proche_dim_suivi_patient(1).iloc[0]["id_suivi"]}")
-print(f"pct_apnees_centrales: {pct_apnees_centrales(1)}")
-
 def remplir_base_analytique(detail):
     SQLITE_PATH = Path("base_analytique.db")
 
@@ -107,79 +162,84 @@ def remplir_base_analytique(detail):
 
     # Première ligne du DataFrame
     ligne = detail.iloc[0]
-    
+    #print(ligne)
     conn = sqlite3.connect(SQLITE_PATH)
     cursor = conn.cursor()
-    
-    print("id_nuit :", ligne["id_nuit"])
-    print("id_patient :", ligne["id_patient"])
-    print("date_nuit :", ligne["date_nuit"])
-    print("iah :", ligne["iah"])
-    print("severite_iah :", ligne["severite_iah"])
-    print("spo2_min :", ligne["spo2_min"])
-    print("spo2_moy :", ligne["spo2_moy"])
-    print("spo2_mediane :", ligne["spo2_mediane"])
-    print("nb_apnees :", ligne["nb_apnees"])
-    print("nb_hypopnees :", ligne["nb_hypopnees"])
-    print("nb_rera :", ligne["nb_rera"])
-    print("nb_microeveils :", ligne["nb_microeveils"])
-    print("duree_sommeil_min :", ligne["duree_sommeil_min"])
-    print("duree_hypoxie_min :", ligne["duree_hypoxie_min"])
-    print("position_dominante :", ligne["position_dominante"])
-    print("decibels_max :", ligne["decibels_max"])
-    print("decibels_moy :", ligne["decibels_moy"])
-    print("nb_ronflements_forts :", ligne["nb_ronflements_forts"])
-    
-    query = """
-    INSERT INTO faits_nuits (
-        id_nuit,
-        id_patient,
-        id_temps,
-        iah,
-        severite_iah,
-        spo2_min,
-        spo2_moy,
-        spo2_mediane,
-        nb_apnees,
-        nb_hypopnees,
-        nb_rera,
-        nb_microeveils,
-        duree_sommeil_min,
-        duree_hypoxie_min,
-        position_dominante,
-        decibels_max,
-        decibels_moy,
-        nb_ronflements_forts,
-        id_suivi_le_plus_proche,
-        pct_apnees_centrales
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """
 
-    cursor.execute(query, (
-        ligne["id_nuit"],
-        ligne["id_patient"],
-        452254,
-        ligne["iah"],
-        ligne["severite_iah"],
-        ligne["spo2_min"],
-        ligne["spo2_moy"],
-        ligne["spo2_mediane"],
-        ligne["nb_apnees"],
-        ligne["nb_hypopnees"],
-        ligne["nb_rera"],
-        ligne["nb_microeveils"],
-        ligne["duree_sommeil_min"],
-        ligne["duree_hypoxie_min"],
-        ligne["position_dominante"],
-        ligne["decibels_max"],
-        ligne["decibels_moy"],
-        ligne["nb_ronflements_forts"],
-        1 ,
-       100 # % nb_apnees obstructive par rapport aux autres apbnées dans la table evenement_respiratoire
-    ))
+    query = """
+INSERT INTO faits_nuits (
+    id_nuit,
+    id_patient,
+    id_temps,
+    iah,
+    severite_iah,
+    spo2_min,
+    spo2_moy,
+    spo2_mediane,
+    nb_apnees,
+    nb_hypopnees,
+    nb_rera,
+    nb_microeveils,
+    duree_sommeil_min,
+    duree_hypoxie_min,
+    position_dominante,
+    decibels_max,
+    decibels_moy,
+    nb_ronflements_forts,
+    id_suivi_le_plus_proche,
+    pct_apnees_centrales
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id_nuit) DO UPDATE SET
+    id_patient = excluded.id_patient,
+    id_temps = excluded.id_temps,
+    iah = excluded.iah,
+    severite_iah = excluded.severite_iah,
+    spo2_min = excluded.spo2_min,
+    spo2_moy = excluded.spo2_moy,
+    spo2_mediane = excluded.spo2_mediane,
+    nb_apnees = excluded.nb_apnees,
+    nb_hypopnees = excluded.nb_hypopnees,
+    nb_rera = excluded.nb_rera,
+    nb_microeveils = excluded.nb_microeveils,
+    duree_sommeil_min = excluded.duree_sommeil_min,
+    duree_hypoxie_min = excluded.duree_hypoxie_min,
+    position_dominante = excluded.position_dominante,
+    decibels_max = excluded.decibels_max,
+    decibels_moy = excluded.decibels_moy,
+    nb_ronflements_forts = excluded.nb_ronflements_forts,
+    id_suivi_le_plus_proche = excluded.id_suivi_le_plus_proche,
+    pct_apnees_centrales = excluded.pct_apnees_centrales
+"""
+
+    cursor.execute(
+        query,
+        (
+            int(ligne["id_nuit"]),
+            int(ligne["id_patient"]),
+            int(get_or_create_dim_temps(ligne["date_nuit"])),
+            float(ligne["iah"]),
+            str(ligne["severite_iah"]),
+            float(ligne["spo2_min"]),
+            float(ligne["spo2_moy"]),
+            float(ligne["spo2_mediane"]),
+            int(ligne["nb_apnees"]),
+            int(ligne["nb_hypopnees"]),
+            int(ligne["nb_rera"]),
+            int(ligne["nb_microeveils"]),
+            float(ligne["duree_sommeil_min"]),
+            float(ligne["duree_hypoxie_min"]),
+            str(ligne["position_dominante"]),
+            float(ligne["decibels_max"]),
+            float(ligne["decibels_moy"]),
+            int(ligne["nb_ronflements_forts"]),
+            int(
+                get_id_suivi_le_plus_proche_dim_suivi_patient(
+                    int(ligne["id_patient"])
+                ).iloc[0]["id_suivi"]
+            ),
+            float(pct_apnees_centrales(int(ligne["id_nuit"]))),
+        ),
+    )
     conn.commit()
     conn.close()
-    
-#remplir_base_analytique(detail)
-

@@ -13,6 +13,8 @@ from generation_pdf import generer_pdf_patient
 
 # Import du module IA
 from ia_comorbidites import get_comorbidite_probable, afficher_prediction_comorbidites
+from remplir_base_analytique import  remplir_base_analytique
+
 
 
 # ====================== CONFIG ======================
@@ -27,10 +29,10 @@ st.markdown("**Clinique du Sommeil d'Arles**")
 
 
 DB_CONFIG = {
-    "host": "localhost",
+    "host": "localhost", 
     "user": "root",
-    "password": "Lapincretin345@1",
-    "database": "cliniquenuit"
+    "password": "passer",
+    "database": "new_clinique"
 }
 
 
@@ -435,6 +437,18 @@ else:
         "Aucune nuit trouvée dans la base."
     )
 
+# =============================================================
+# Remplir la base analytique
+# =============================================================
+
+st.markdown("---")
+
+st.subheader("🚀 Base analytique")
+
+if st.button("Remplir la base analytique"):
+    with st.spinner("Insertion des données en cours..."):
+        remplir_base_analytique(detail)
+    st.success("Base analytique remplie avec succès.")
 
 
 st.sidebar.caption(
