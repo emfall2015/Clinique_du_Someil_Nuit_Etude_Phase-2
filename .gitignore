@@ -7,3 +7,4 @@ models/
 datalake.db
 base-analytique/models/
 base-analytique/base_analytique.db
+patient/
