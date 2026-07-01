@@ -6,7 +6,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 def generer_pdf_patient(patient, detail, rapport, comorbidite, probabilite, nuit_dir):
     
 
-    fichier = f"rapport_patient_{patient['id_patient']}.pdf"
+    fichier = f"../patient/rapport_patient_{patient['id_patient']}.pdf"
 
     doc = SimpleDocTemplate(fichier)
 
