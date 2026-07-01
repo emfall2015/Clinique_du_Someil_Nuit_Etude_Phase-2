@@ -15,7 +15,14 @@ from generation_pdf import generer_pdf_patient
 from ia_comorbidites import get_comorbidite_probable, afficher_prediction_comorbidites
 from remplir_base_analytique import  remplir_base_analytique
 
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+print("HOST :", os.getenv("DB_HOST"))
+print("USER :", os.getenv("DB_USER"))
+print("PASSWORD :", os.getenv("DB_PASSWORD"))
+print("DATABASE :", os.getenv("DB_NAME"))
 
 # ====================== CONFIG ======================
 
@@ -29,10 +36,10 @@ st.markdown("**Clinique du Sommeil d'Arles**")
 
 
 DB_CONFIG = {
-    "host": "localhost", 
-    "user": "root",
-    "password": "passer",
-    "database": "new_clinique"
+    "host": os.getenv("DB_HOST"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "database": os.getenv("DB_NAME")
 }
 
 
