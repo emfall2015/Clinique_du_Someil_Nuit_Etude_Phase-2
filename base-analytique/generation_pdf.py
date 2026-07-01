@@ -129,8 +129,8 @@ def generer_pdf_patient(patient, detail, rapport, comorbidite, probabilite, nuit
             contenu.append(
                 Image(
                     str(chemin),
-                    width=500,
-                    height=300
+                    width=600,
+                    height=400
                 )
             )
 
