@@ -6,20 +6,27 @@ import matplotlib.pyplot as plt
 import csv
 from pathlib import Path
 import sqlite3
-
+import sys
 
 
 #-----------------------------------------------------
 #-------- LECTURE FICHIER CSV-------------------------
 
 # Pour choisir le csv a charger en fonction de l'id_nuit
-id_nuit = input("Entrez l'id_nuit du fichier à charger : ")
-id_medecin = input("Entrez l'id_medecin du validateur : ")
-commentaire_medical = input("votre commentaire : ")
+# id_nuit = input("Entrez l'id_nuit du fichier à charger : ")
+# id_medecin = input("Entrez l'id_medecin du validateur : ")
+# commentaire_medical = input("votre commentaire : ")
 
-for fichier in os.listdir("./raw/"):
+id_nuit = sys.argv[1]
+id_medecin = sys.argv[2]
+commentaire_medical = sys.argv[3]
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+RAW_DIR = os.path.join(BASE_DIR, "raw")
+
+for fichier in os.listdir(RAW_DIR):
     if fichier.endswith(f"-{id_nuit}.csv"):
-        df = pd.read_csv("./raw/"+fichier)
+        df = pd.read_csv(os.path.join(RAW_DIR, fichier))
         break
 else :
     print("Aucun fichier trouvé")
@@ -39,7 +46,7 @@ pas_sec = df["timestamp_sec"].iloc[1] - df["timestamp_sec"].iloc[0]
 # Durée couverte par le CSV (ex: 3600 sec = 1h)
 duree_sommeil_sec = df['timestamp_sec'].iloc[-1] - df['timestamp_sec'].iloc[0] + pas_sec
 duree_sommeil_min = duree_sommeil_sec/60
-print(duree_sommeil_min)
+
 
 #-----------------------------------------------------
 #-------- LECTURE SQL---------------------------------
@@ -125,7 +132,13 @@ nb_doublons = df.duplicated().sum()
 
 
 # Copier le CSV brut dans /raw/traite/
-df.to_csv(f"./raw/traite/traite_signal-psg-patient-2-nuit-{id_nuit}.csv", sep=",", index=False, encoding="utf-8-sig")
+TRAITE_DIR = os.path.join(RAW_DIR, "traite")
+chemin_fichier = os.path.join(
+    TRAITE_DIR,
+    f"traite_signal-psg-patient-2-nuit-{id_nuit}.csv"
+)
+
+df.to_csv(chemin_fichier, sep=",", index=False, encoding="utf-8-sig")
 
 # # Charger les résultats_nuit dans SQL
 
@@ -181,17 +194,18 @@ for index, row in df.iterrows():
 #-------- COURBES ------------------------------------
 
 # Dossier de destination
-dossier = Path(f"nuits/{id_nuit}")
+dossier = os.path.join(BASE_DIR, "nuits", str(id_nuit))
+
 
 # Création du dossier et des sous-dossiers si nécessaire
-dossier.mkdir(parents=True, exist_ok=True)
+os.makedirs(dossier, exist_ok=True)
 
 # Générer une courbe PNG et PDF pour debit nasal
 # Objectif : visualiser les données.
 debit = []
 ronflement_db = []
 spo2 = []
-with open("./raw/"+fichier, encoding="utf-8") as f:
+with open(os.path.join(RAW_DIR, fichier), encoding="utf-8") as f:
     reader = csv.DictReader(f, delimiter=',')
     for row in reader:
         debit.append(float(row["debit_nasal_pct"]))
@@ -209,8 +223,8 @@ plt.xlabel("/10 secondes")
 plt.ylabel("Débit nasal")
 plt.title("Évolution du débit nasal sur une heure par tranche de 10 secondes")
 plt.grid(True)
-plt.savefig(dossier / f"debit_nasal_nuit_{id_nuit}.png")
-plt.savefig(dossier / f"debit_nasal_nuit_{id_nuit}.pdf")
+plt.savefig(os.path.join(dossier, f"debit_nasal_nuit_{id_nuit}.png"))
+plt.savefig(os.path.join(dossier, f"debit_nasal_nuit_{id_nuit}.pdf"))
 plt.close()
 
 fig,ax2 = plt.subplots()
@@ -221,8 +235,11 @@ plt.xlabel("/10 secondes")
 plt.ylabel("Ronflement (dB)")
 plt.title("Évolution du ronflement sur une heure par tranche de 10 secondes")
 plt.grid(True)
-plt.savefig(dossier / f"ronflement_db_{id_nuit}.png")
-plt.savefig(dossier / f"ronflement_db_{id_nuit}.pdf")
+#plt.savefig(dossier / f"ronflement_db_{id_nuit}.png")
+#plt.savefig(dossier / f"ronflement_db_{id_nuit}.pdf")
+plt.savefig(os.path.join(dossier, f"ronflement_db_{id_nuit}.png"))
+plt.savefig(os.path.join(dossier, f"ronflement_db_{id_nuit}.pdf"))
+
 plt.close()
 
 fig,ax3 = plt.subplots()
@@ -233,8 +250,10 @@ plt.xlabel("/10 secondes")
 plt.ylabel("spo2")
 plt.title("Évolution du spo2 sur une heure par tranche de 10 secondes")
 plt.grid(True)
-plt.savefig(dossier / f"spo2_{id_nuit}.png")
-plt.savefig(dossier / f"spo2_{id_nuit}.pdf")
+#plt.savefig(dossier / f"spo2_{id_nuit}.png")
+#plt.savefig(dossier / f"spo2_{id_nuit}.pdf")
+plt.savefig(os.path.join(dossier, f"spo2_{id_nuit}.pdf"))
+plt.savefig(os.path.join(dossier, f"spo2_{id_nuit}.png"))
 plt.close()
 
 
@@ -268,7 +287,7 @@ else:
     duree_hypoxie_min=0
 
 
-with open(dossier / f"rapport_medical_{id_nuit}.txt", "w", encoding="utf-8") as f:
+with open(os.path.join(dossier, f"rapport_medical_{id_nuit}.txt"), "w", encoding="utf-8") as f:
     f.write("=== Rapport médical pour le Medecin ===\n\n")
     
     f.write("============================================\n")
@@ -305,7 +324,17 @@ with open(dossier / f"rapport_medical_{id_nuit}.txt", "w", encoding="utf-8") as 
 
 #-----------------------------------------------------
 #--------  Création du datalake --------------- --------------------
-cnx_sqlite = sqlite3.connect("datalake.db")
+
+# Dossier de destination
+datalake = os.path.join(BASE_DIR, "datalake")
+
+# Création du dossier s'il n'existe pas
+os.makedirs(datalake, exist_ok=True)
+
+# Chemin de la base SQLite
+db_path = os.path.join(datalake, "datalake.db")
+cnx_sqlite = sqlite3.connect(db_path)
+
 cursqlite = cnx_sqlite.cursor()
 cursqlite.execute("CREATE TABLE IF NOT EXISTS raw_capteur (id_raw INTEGER PRIMARY KEY AUTOINCREMENT,id_nuit  INTEGER NOT NULL,timestamp_sec INTEGER NOT NULL,spo2 REAL,debitnasalpct REAL,effortthoraciquepct REAL,position TEXT,ronflements_db REAL,flagevenement INTEGER CHECK (flagevenement IN (0,1)))")
 cursqlite.execute("CREATE TABLE IF NOT EXISTS curated_nuit (id_curated INTEGER PRIMARY KEY AUTOINCREMENT,id_nuit INTEGER NOT NULL,spo2_min REAL,spo2_moy REAL,spo2_mediane REAL,nb_apnees INTEGER,nb_hypopnees INTEGER,nb_rera INTEGER,nb_microeveils INTEGER,dureehypoxiemin REAL,position_dominante TEXT,decibels_max REAL,decibels_moy REAL,nbronflementsforts INTEGER)")

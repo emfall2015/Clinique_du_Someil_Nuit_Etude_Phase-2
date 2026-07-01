@@ -1,5 +1,10 @@
-datalake.db
+datalake/datalake.db
 __pycache__/
 .env
 nuits/
 raw/traite/
+models/
+datalake.db
+base-analytique/models/
+base-analytique/base_analytique.db
+patient/
