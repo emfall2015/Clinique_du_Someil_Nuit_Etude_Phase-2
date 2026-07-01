@@ -35,8 +35,8 @@ MYSQL_CONFIG = {
     "user": "root",
     # "password": "root",
     # "database": "cliniquev3"
-     "password": "Lapincretin345@1",
-    "database": "cliniquenuit"
+     "password": "passer",
+    "database": "new_clinique"
 }
 
 SQLITE_PATH = Path("base_analytique.db")

@@ -6,3 +6,4 @@ raw/traite/
 models/
 datalake.db
 base-analytique/models/
+base-analytique/base_analytique.db
