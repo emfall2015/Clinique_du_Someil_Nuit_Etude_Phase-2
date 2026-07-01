@@ -7,16 +7,18 @@ import mysql.connector
 from datetime import datetime
 from pathlib import Path
 import sqlite3
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
-
 MYSQL_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "passer",
-    "database": "clinique_v2",
+    "host": os.getenv("DB_HOST"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "database": os.getenv("DB_NAME")
 }
 
 SQLITE_PATH = Path("base_analytique.db")
