@@ -9,12 +9,15 @@ def generer_pdf_patient(patient, detail, rapport, comorbidite, probabilite, nuit
     # Dossier du projet (parent de base-analytique)
     racine_projet = Path(__file__).resolve().parent.parent
     
-    # Création du dossier "patient" s'il n'existe pas
-    dossier = racine_projet / "patient"
-    
-    
-    dossier.mkdir(parents=True, exist_ok=True)
-    fichier = dossier / f"rapport_patient_{patient['id_patient']}.pdf"
+    id_patient = patient['id_patient']
+    id_nuit = patient['id_nuit']
+
+    dossier_patient = racine_projet / "patients" / str(id_patient)
+    dossier_nuit = dossier_patient / f"nuit{id_nuit}"
+
+    dossier_nuit.mkdir(parents=True, exist_ok=True)
+
+    fichier = dossier_nuit / "rapport_médical.pdf"
     
 
 
