@@ -1,4 +1,4 @@
-id_appareil,date_jour,duree_utilisation_h,iah_residuel,fuite_l_min,nb_evenements,qualite_donnee
+id_appareil,date_jour,duree_utilisation_h,iah_residuel,fuites_l_min,nb_evenements,qualite_donnee
 13,2026-06-01,5.8,4.2,1.1,18,bonne
 13,2026-06-02,6.3,3.8,0.9,16,bonne
 13,2026-06-03,5.5,4.6,1.3,20,dégradée
