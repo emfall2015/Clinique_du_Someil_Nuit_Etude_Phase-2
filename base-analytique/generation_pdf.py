@@ -1,14 +1,24 @@
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image 
 from reportlab.lib.styles import getSampleStyleSheet
+from pathlib import Path
 
 
 def generer_pdf_patient(patient, detail, rapport, comorbidite, probabilite, nuit_dir):
     
+    # Dossier du projet (parent de base-analytique)
+    racine_projet = Path(__file__).resolve().parent.parent
+    
+    # Création du dossier "patient" s'il n'existe pas
+    dossier = racine_projet / "patient"
+    
+    
+    dossier.mkdir(parents=True, exist_ok=True)
+    fichier = dossier / f"rapport_patient_{patient['id_patient']}.pdf"
+    
 
-    fichier = f"../patient/rapport_patient_{patient['id_patient']}.pdf"
 
-    doc = SimpleDocTemplate(fichier)
+    doc = SimpleDocTemplate(str(fichier))
 
     styles = getSampleStyleSheet()
 
@@ -140,4 +150,4 @@ def generer_pdf_patient(patient, detail, rapport, comorbidite, probabilite, nuit
     doc.build(contenu)
 
 
-    return fichier
+    return str(fichier)
