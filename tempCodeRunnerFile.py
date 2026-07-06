@@ -1,0 +1,1 @@
+commentaire_medical = sys.argv[3]
