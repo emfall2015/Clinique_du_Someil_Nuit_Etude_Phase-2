@@ -257,6 +257,32 @@ def plot_cpap_compliance(df):
 
 
 
+def plot_cpap_IAH_residuel(df):
+    """Suivi de l'IAH résiduel sous CPAP."""
+    
+    # 🔹 Tri chronologique (toujours une bonne pratique)
+    df = df.sort_values("date_complete")
+
+    fig, ax = plt.subplots(figsize=(10, 4))
+
+    ax.plot(df["date_complete"], df["iah_residuel"],
+            marker='o', color="green", label="Durée (h)")
+
+    ax.axhline(5, color="orange", linestyle="--", label="Seuil 5/h")
+    ax.set_title("Suivi IAH résiduel (Derniers 30 jours)")
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Nb/h")
+    ax.legend()
+
+    # 🔹 Rotation des dates
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right")
+
+    # 🔹 Afficher une date sur 5
+    ax.xaxis.set_major_locator(ticker.MaxNLocator(nbins=len(df)//5))
+
+    st.pyplot(fig)
+
+
 def plot_patient_trends(id_patient):
     """Évolution des indicateurs pour un patient."""
     df_nuits = get_faits_nuits()
@@ -481,9 +507,14 @@ def main():
             with col3:
                 st.metric("Alertes observance", df_cpap["alerte_observance_insuffisante"].sum())
                 st.metric("Alertes IAH élevé", df_cpap["alerte_iah_eleve"].sum())
+                if df_cpap["alerte_iah_eleve"].sum() > 7 :
+                    st.warning("Traitement partiel - Ajustement recommandé (masque, pression)")
 
             # Graphique d'observance
             plot_cpap_compliance(df_cpap)
+
+            # Graphique de l'IAH résiduel
+            plot_cpap_IAH_residuel(df_cpap)
 
             # ============================
             # Tableau des données CPAP jour
